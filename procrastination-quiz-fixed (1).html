@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A self-assessment tool to discover your procrastination style across six dimensions.">
+<title>Discover Your Procrastination Style</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e6f2f8;
+    --ink: #063758;
+    --blue: #00ADEF;
+    --blue-light: #4dcaf5;
+    --blue-pale: #cceefb;
+    --muted: #4a7a9b;
+    --border: #a8d4e8;
+    --white: #ffffff;
+    --focus-ring: #0078b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── Focus styles ── */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .hero {
+    background: var(--ink);
+    color: var(--white);
+    padding: 60px 24px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,173,239,0.35) 0%, transparent 70%);
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,173,239,0.2) 0%, transparent 70%);
+  }
+
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--blue-light);
+    margin-bottom: 16px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    line-height: 1.15;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--blue);
+  }
+
+  .hero p {
+    max-width: 560px;
+    margin: 0 auto;
+    color: #a0c8e0;
+    font-size: 15px;
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+    font-weight: 400;
+  }
+
+  .scoring-note {
+    background: var(--blue-pale);
+    border-left: 3px solid var(--blue);
+    padding: 16px 20px;
+    margin: 32px auto;
+    max-width: 700px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  .scoring-note strong { color: var(--blue); }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .progress-bar-wrap {
+    background: var(--border);
+    border-radius: 99px;
+    height: 4px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 99px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  .quiz-section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 28px;
+    display: none;
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  .quiz-section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-number {
+    width: 40px; height: 40px;
+    background: var(--ink);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+    /* Decorative, hidden from screen readers via aria-hidden on parent */
+  }
+
+  .section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--ink);
+  }
+
+  .section-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .question {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #deeef7;
+  }
+
+  .question:last-of-type { border-bottom: none; }
+
+  .question-text {
+    font-size: 14px;
+    line-height: 1.65;
+    margin-bottom: 14px;
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .question-num {
+    font-weight: 700;
+    color: var(--blue);
+    margin-right: 6px;
+  }
+
+  .options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .option-btn {
+    padding: 8px 18px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    border-radius: 99px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .option-btn:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+    background: var(--blue-pale);
+  }
+
+  .option-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .option-btn.selected.frequently { background: var(--blue); border-color: var(--blue); color: white; }
+  .option-btn.selected.sometimes { background: #1a7abf; border-color: #1a7abf; color: white; }
+  .option-btn.selected.rarely { background: #6aacca; border-color: #6aacca; color: white; }
+
+  .option-btn[aria-checked="true"].frequently { background: var(--blue); border-color: var(--blue); color: white; }
+  .option-btn[aria-checked="true"].sometimes { background: #1a7abf; border-color: #1a7abf; color: white; }
+  .option-btn[aria-checked="true"].rarely { background: #6aacca; border-color: #6aacca; color: white; }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    gap: 16px;
+  }
+
+  .btn {
+    padding: 12px 28px;
+    border-radius: 99px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--blue);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #0090cc; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+  .section-status {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  #results-section { display: none; }
+
+  .results-hero {
+    text-align: center;
+    padding: 40px 24px;
+  }
+
+  .results-hero h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+
+  .results-summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 32px 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .results-summary-table th {
+    background: var(--ink);
+    color: var(--white);
+    padding: 12px 16px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: left;
+    font-weight: 700;
+  }
+
+  .results-summary-table td {
+    padding: 13px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+
+  .results-summary-table tr:last-child td { border-bottom: none; }
+  .results-summary-table tr:nth-child(even) td { background: #f0f8fd; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .badge-major { background: var(--blue); color: white; }
+  .badge-minor { background: var(--blue-pale); color: var(--ink); }
+  .badge-none { background: #e8f0f5; color: var(--muted); }
+
+  .style-cards {
+    display: grid;
+    gap: 20px;
+    margin-top: 32px;
+  }
+
+  .style-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    border-left: 4px solid var(--border);
+  }
+
+  .style-card.major { border-left-color: var(--blue); }
+  .style-card.minor { border-left-color: #1a7abf; }
+
+  .style-card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    flex-wrap: wrap;
+  }
+
+  .style-card-score {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .style-card-desc {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #2a5a7a;
+    font-weight: 400;
+  }
+
+  .results-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+  }
+
+  .incomplete-warning {
+    background: #fff8e1;
+    border: 1px solid #f0c040;
+    color: #7a5800;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 16px;
+    display: none;
+    font-weight: 500;
+  }
+
+  .incomplete-warning[role="alert"] { /* Ensures screen readers announce */ }
+
+  /* Copy-success toast */
+  .copy-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--ink);
+    color: var(--white);
+    padding: 12px 24px;
+    border-radius: 99px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  .copy-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 600px) {
+    .quiz-section { padding: 24px 20px; }
+    .options { gap: 8px; }
+    .option-btn { padding: 7px 14px; font-size: 11px; }
+    .results-actions { flex-direction: column; align-items: center; }
+  }
+
+  /* Print-friendly results */
+  @media print {
+    .hero, .scoring-note, .progress-bar-wrap, .nav-row, .results-actions { display: none !important; }
+    .container { padding-top: 0; }
+    #results-section { display: block !important; }
+    .style-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero" role="banner">
+  <div class="hero-label">Self-Assessment Tool</div>
+  <h1>Discover Your<br><em>Procrastination Style</em></h1>
+  <p>Six short quizzes to help you understand the patterns behind your procrastination. Adapted from the work of Dr. Linda Sapadin.</p>
+</div>
+
+<main class="container">
+  <div class="progress-bar-wrap" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Quiz progress">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <div id="quiz-container"></div>
+  <div id="incomplete-warning" class="incomplete-warning" role="alert" aria-live="assertive"></div>
+
+  <div class="nav-row" id="nav-row">
+    <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Go to previous quiz section">&#8592; Back</button>
+    <span class="section-status" id="sectionStatus" aria-live="polite"></span>
+    <button type="button" class="btn btn-primary" id="nextBtn" aria-label="Continue to next quiz section">Continue &#8594;</button>
+  </div>
+
+  <div id="results-section" role="region" aria-label="Quiz results">
+    <div class="results-hero">
+      <p style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;font-weight:700;">Your Results</p>
+      <h2>Your Procrastination Profile</h2>
+      <p style="color:var(--muted);font-size:14px;max-width:500px;margin:0 auto;font-weight:400;">Here&#39;s how you scored across all six procrastination styles. Use this to identify your patterns and growth edges.</p>
+    </div>
+
+    <div class="scoring-note" role="note">
+      <strong>How scoring works:</strong> For each quiz, answers of <strong>Frequently</strong> = 2 points, <strong>Sometimes</strong> = 1 point, <strong>Rarely</strong> = 0 points. Total score of <strong>10+</strong> = Major style &middot; <strong>5&ndash;9</strong> = Minor style &middot; <strong>Under 5</strong> = Not a primary style.
+    </div>
+
+    <table class="results-summary-table" id="summaryTable" aria-label="Score summary by procrastination style">
+      <thead>
+        <tr>
+          <th scope="col">Style</th>
+          <th scope="col">Score</th>
+          <th scope="col">Classification</th>
+          <th scope="col">Rank</th>
+        </tr>
+      </thead>
+      <tbody id="summaryBody"></tbody>
+    </table>
+
+    <div class="style-cards" id="styleCards"></div>
+
+    <div class="results-actions">
+      <button type="button" class="btn btn-secondary" id="backToReviewBtn" aria-label="Go back to review your answers">&#8592; Review Answers</button>
+      <button type="button" class="btn btn-primary" id="copyResultsBtn" aria-label="Copy results to clipboard">&#x1F4CB; Copy Results</button>
+      <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Start the quiz over">&#8635; Start Over</button>
+    </div>
+  </div>
+</main>
+
+<div class="copy-toast" id="copyToast" aria-live="polite">Results copied to clipboard!</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var quizzes = [
+    {
+      name: "Perfectionist",
+      questions: [
+        "Do I get preoccupied with details, rules, or schedules that others don't seem to care much about?",
+        "Do I have difficulty starting or completing a project because my own standards haven't been met?",
+        "Am I reluctant to delegate tasks or work with others unless they do things my way?",
+        "Do others comment on my being rigid, stubborn, or finicky?",
+        "Am I critical of what I've accomplished or how long it took me to do it?",
+        "Am I satisfied with what I do only if it is as good as it can possibly be?",
+        "Do I look on my failures as embarrassments that I would hate to mention or have revealed?",
+        "Do I have difficulty maintaining a sense of humor while I'm struggling to do something new?",
+        "Do I feel upset or humiliated if I don't do something as well as one of my peers?",
+        "Do I think about situations in extremes - black or white - ignoring the gray area in between?"
+      ],
+      description: "The Perfectionist procrastinator delays because nothing feels good enough. You may avoid starting (or finishing) tasks because fear of imperfection feels worse than not trying at all. Your high standards are a strength \u2014 the work is learning when \u2018good enough\u2019 truly is."
+    },
+    {
+      name: "Dreamer",
+      questions: [
+        "Do I think a lot about what I'd like to accomplish but rarely get projects off the ground?",
+        "Do I wait for opportunities to drop into my lap rather than take an active approach?",
+        "Do I let lots of time drift by with passive activities like watching TV, daydreaming, or hanging out?",
+        "Do I spend more time thinking about the finished project than about the details needed to get it done?",
+        "Do I long to be able to go from A to Z without having to deal with the stuff in between?",
+        "Do I wish someone else would handle the bothersome details of life, freeing me to do what I really want?",
+        "Do I find myself thinking or speaking words like, 'I'll try to...' or 'Someday I will...'?",
+        "Do other people sometimes accuse me of being a dreamer, of having my head in the clouds?",
+        "Do I do what I feel like at the moment, forgetting or ignoring previous plans or priorities?",
+        "Do I expect great things from myself, but wonder why they never seem to happen?"
+      ],
+      description: "The Dreamer procrastinator is full of vision and possibility \u2014 but struggles to translate big ideas into concrete steps. You may spend more energy imagining the finish line than mapping the path to it. The work is building bridges between vision and action."
+    },
+    {
+      name: "Worrier",
+      questions: [
+        "Do I have difficulty making decisions, vacillating about what I should do?",
+        "Do I need - or seek - approval, advice, or assurance from others before I do things?",
+        "Do I have trouble starting projects or working on my own because I doubt my judgment or ability?",
+        "Do I think things are too much for me, or worry about overdoing it?",
+        "Do I hesitate to leave my comfort zone, avoiding situations that might cause stress or anxiety?",
+        "Do I become easily agitated when something disrupts my normal routine?",
+        "Do I avoid situations that are unpredictable or may be uncomfortable?",
+        "Do I sometimes paralyze myself before starting work on a project, wondering about the 'what if's'?",
+        "Do I exaggerate the trouble that might arise from a situation, or minimize my ability to cope with it?",
+        "Do I think I could do more - or better - if somebody would take me by the hand and be there for me?"
+      ],
+      description: "The Worrier procrastinator delays to avoid anxiety, discomfort, or uncertainty. Safety feels more important than progress. You may know what to do but struggle to start because the unknown feels threatening. The work is building tolerance for uncertainty and trust in your own resilience."
+    },
+    {
+      name: "Crisis-Maker",
+      questions: [
+        "Do I ignore important tasks, then, at the last minute, work frantically to get them done?",
+        "Do I feel that life is chaotic, and that I can never be sure what the next day will bring?",
+        "Do my moods change rapidly and dramatically?",
+        "Do I get easily frustrated and show it by displaying anger or quitting?",
+        "Do I act in ways that other people find provocative, seductive, or attention getting?",
+        "Am I easily influenced by circumstances, responding to the need of the moment?",
+        "Do I enjoy - or pride myself on - taking risks or living on the edge?",
+        "Do I tend to get very involved with someone or something, then abruptly detach myself and move on?",
+        "Do I think of my life as so dramatic that it could be made into a soap opera?",
+        "Do I prefer action, having little patience for things that are too slow, predictable, or safe?"
+      ],
+      description: "The Crisis-Maker procrastinator actually thrives on urgency \u2014 the adrenaline of a looming deadline can feel energizing or even necessary. You may unconsciously create pressure because calm feels boring or unsafe. The work is finding engagement and motivation without manufacturing emergencies."
+    },
+    {
+      name: "Defier",
+      questions: [
+        "Do I become sulky, irritable, sarcastic, or argumentative when asked to do something I don't want to do?",
+        "Do I work deliberately slowly or ineffectively in order to sabotage a task I don't like doing?",
+        "Do I feel resentful or manipulated when I wind up having to do something unexpectedly?",
+        "Do I feel that others make unreasonable demands on me?",
+        "Do I avoid obligations by claiming I've forgotten them or they're not important?",
+        "When people ask me why I did or didn't do something, do I feel they are hassling or nagging me?",
+        "Do I believe that I'm doing a better job than others think - or say - I'm doing?",
+        "Do I take offense at suggestions from others regarding how I could do things differently?",
+        "Do others accuse me of - or get annoyed with me for - failing to do my share of work efficiently?",
+        "Do I frequently criticize or ridicule people who are in authority?"
+      ],
+      description: "The Defier procrastinator uses delay as a form of resistance \u2014 a way to assert autonomy or push back against demands that feel controlling or unfair. Your procrastination is often a message. The work is learning to express needs and boundaries directly rather than through avoidance."
+    },
+    {
+      name: "Overdoer",
+      questions: [
+        "Do I run around doing things, without really feeling that I'm accomplishing very much?",
+        "Do I have difficulty saying 'no' to people who ask for help, yet feel resentful later on?",
+        "When I'm doing a task, do I wonder, 'How did I get myself into this'?",
+        "Do I have a strong need for approval from other people?",
+        "Do I find myself complaining, 'I have no time', 'I have too much to do', or 'I'm too busy'?",
+        "When I get unexpected free time, do I keep finding things to do instead of catching up with old things?",
+        "Do I have a strong need to be self-reliant and hate to ask someone else for help?",
+        "Do I get over involved in other people's problems, postponing attention to my own?",
+        "Do other people regard me as someone who will drop everything if and when they need me?",
+        "Do I enjoy being busy, but secretly think that maybe I don't know how to be any other way?"
+      ],
+      description: "The Overdoer procrastinator takes on too much, then can't get to what matters most. Being perpetually busy can be its own form of avoidance. You may delay important personal work by staying consumed with everyone else's needs. The work is prioritizing ruthlessly and giving yourself permission to say no."
+    }
+  ];
+
+  var answers = quizzes.map(function() { return Array(10).fill(null); });
+  var currentSection = 0;
+
+  /* ── Build quiz DOM ── */
+  function buildQuizzes() {
+    var container = document.getElementById('quiz-container');
+    var frag = document.createDocumentFragment();
+
+    quizzes.forEach(function(quiz, qi) {
+      var section = document.createElement('div');
+      section.className = 'quiz-section' + (qi === 0 ? ' active' : '');
+      section.id = 'section-' + qi;
+      section.setAttribute('role', 'region');
+      section.setAttribute('aria-label', 'Quiz ' + (qi + 1) + ' of ' + quizzes.length);
+
+      var header = document.createElement('div');
+      header.className = 'section-header';
+
+      var numCircle = document.createElement('div');
+      numCircle.className = 'section-number';
+      numCircle.setAttribute('aria-hidden', 'true');
+      numCircle.textContent = qi + 1;
+
+      var titleWrap = document.createElement('div');
+      var subtitle = document.createElement('div');
+      subtitle.className = 'section-subtitle';
+      subtitle.textContent = 'Quiz ' + (qi + 1) + ' of ' + quizzes.length;
+      var title = document.createElement('div');
+      title.className = 'section-title';
+      title.id = 'section-title-' + qi;
+      title.textContent = 'Section ' + (qi + 1);
+      titleWrap.appendChild(subtitle);
+      titleWrap.appendChild(title);
+      header.appendChild(numCircle);
+      header.appendChild(titleWrap);
+      section.appendChild(header);
+
+      quiz.questions.forEach(function(q, i) {
+        var qDiv = document.createElement('div');
+        qDiv.className = 'question';
+        qDiv.id = 'q-' + qi + '-' + i;
+
+        var qText = document.createElement('div');
+        qText.className = 'question-text';
+        qText.id = 'q-text-' + qi + '-' + i;
+        qText.innerHTML = '<span class="question-num">' + (i + 1) + '.</span>' + q;
+        qDiv.appendChild(qText);
+
+        /* ARIA radiogroup for accessibility */
+        var optionsDiv = document.createElement('div');
+        optionsDiv.className = 'options';
+        optionsDiv.setAttribute('role', 'radiogroup');
+        optionsDiv.setAttribute('aria-labelledby', 'q-text-' + qi + '-' + i);
+
+        ['frequently', 'sometimes', 'rarely'].forEach(function(val) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'option-btn ' + val;
+          btn.setAttribute('role', 'radio');
+          btn.setAttribute('aria-checked', 'false');
+          btn.setAttribute('aria-label', val.charAt(0).toUpperCase() + val.slice(1));
+          btn.dataset.qi = qi;
+          btn.dataset.i = i;
+          btn.dataset.val = val;
+          btn.textContent = val.charAt(0).toUpperCase() + val.slice(1);
+          optionsDiv.appendChild(btn);
+        });
+
+        qDiv.appendChild(optionsDiv);
+        section.appendChild(qDiv);
+      });
+
+      frag.appendChild(section);
+    });
+
+    container.appendChild(frag);
+    updateNav();
+  }
+
+  /* ── Select answer ── */
+  function selectAnswer(qi, questionIndex, value, btn) {
+    answers[qi][questionIndex] = value;
+    var qDiv = document.getElementById('q-' + qi + '-' + questionIndex);
+    qDiv.querySelectorAll('.option-btn').forEach(function(b) {
+      b.classList.remove('selected');
+      b.setAttribute('aria-checked', 'false');
+    });
+    btn.classList.add('selected');
+    btn.setAttribute('aria-checked', 'true');
+    document.getElementById('incomplete-warning').style.display = 'none';
+  }
+
+  /* ── Navigation ── */
+  function goTo(dir) {
+    var warning = document.getElementById('incomplete-warning');
+    if (dir === 1) {
+      var unanswered = answers[currentSection].filter(function(a) { return a === null; }).length;
+      if (unanswered > 0) {
+        warning.style.display = 'block';
+        warning.textContent = 'Please answer all ' + unanswered + ' remaining question' + (unanswered > 1 ? 's' : '') + ' before continuing.';
+        return;
+      }
+      warning.style.display = 'none';
+    }
+    document.getElementById('section-' + currentSection).classList.remove('active');
+    currentSection += dir;
+    if (currentSection >= quizzes.length) { showResults(); return; }
+    document.getElementById('section-' + currentSection).classList.add('active');
+    updateNav();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateNav() {
+    var prev = document.getElementById('prevBtn');
+    var next = document.getElementById('nextBtn');
+    var status = document.getElementById('sectionStatus');
+    var bar = document.getElementById('progressBar');
+    var wrap = bar.parentElement;
+    prev.disabled = currentSection === 0;
+    next.textContent = currentSection === quizzes.length - 1 ? 'See My Results \u2192' : 'Continue \u2192';
+    status.textContent = (currentSection + 1) + ' of ' + quizzes.length;
+    var pct = Math.round((currentSection / quizzes.length) * 100);
+    bar.style.width = pct + '%';
+    wrap.setAttribute('aria-valuenow', pct);
+  }
+
+  /* ── Scoring ── */
+  function calcScore(qi) {
+    return answers[qi].reduce(function(sum, a) {
+      if (a === 'frequently') return sum + 2;
+      if (a === 'sometimes') return sum + 1;
+      return sum;
+    }, 0);
+  }
+
+  function classify(score) {
+    if (score >= 10) return { cls: 'major', label: 'Major Style' };
+    if (score >= 5) return { cls: 'minor', label: 'Minor Style' };
+    return { cls: 'none', label: 'Not Primary' };
+  }
+
+  /* ── Results ── */
+  var cachedScores = null;
+  var cachedSorted = null;
+
+  function computeScores() {
+    var scores = quizzes.map(function(q, i) {
+      return { name: q.name, score: calcScore(i), desc: q.description };
+    });
+    var sorted = scores.slice().sort(function(a, b) { return b.score - a.score; });
+    var rank = 1;
+    sorted.forEach(function(s, i) {
+      if (i > 0 && sorted[i].score < sorted[i - 1].score) rank = i + 1;
+      s.rank = rank;
+    });
+    cachedScores = scores;
+    cachedSorted = sorted;
+  }
+
+  function showResults() {
+    computeScores();
+
+    document.getElementById('quiz-container').style.display = 'none';
+    document.getElementById('nav-row').style.display = 'none';
+    document.getElementById('progressBar').style.width = '100%';
+    document.getElementById('progressBar').parentElement.setAttribute('aria-valuenow', '100');
+
+    /* Build summary table using DOM methods (not innerHTML +=) */
+    var tbody = document.getElementById('summaryBody');
+    tbody.innerHTML = '';
+
+    cachedScores.forEach(function(s) {
+      var ranked = cachedSorted.find(function(r) { return r.name === s.name; });
+      var info = classify(s.score);
+      var tr = tbody.insertRow();
+
+      var tdName = tr.insertCell();
+      tdName.innerHTML = '<strong>' + s.name + '</strong>';
+
+      var tdScore = tr.insertCell();
+      tdScore.innerHTML = '<strong>' + s.score + '</strong> / 20';
+
+      var tdClass = tr.insertCell();
+      var badge = document.createElement('span');
+      badge.className = 'badge badge-' + info.cls;
+      badge.textContent = info.label;
+      tdClass.appendChild(badge);
+
+      var tdRank = tr.insertCell();
+      tdRank.textContent = '#' + ranked.rank;
+    });
+
+    /* Build style cards */
+    var cards = document.getElementById('styleCards');
+    cards.innerHTML = '';
+
+    var h = document.createElement('h3');
+    h.style.cssText = 'font-family:Montserrat,sans-serif;font-weight:700;font-size:1.3rem;margin-bottom:4px;color:#063758;';
+    h.textContent = 'Your Identified Styles';
+    cards.appendChild(h);
+
+    var sub = document.createElement('p');
+    sub.style.cssText = 'color:#4a7a9b;font-size:13px;margin-bottom:20px;';
+    sub.textContent = 'Major (10+) and Minor (5\u20139) styles shown below.';
+    cards.appendChild(sub);
+
+    var hasStyles = false;
+    cachedSorted.forEach(function(s) {
+      if (s.score < 5) return;
+      hasStyles = true;
+      var info = classify(s.score);
+      var card = document.createElement('div');
+      card.className = 'style-card ' + info.cls;
+
+      var titleDiv = document.createElement('div');
+      titleDiv.className = 'style-card-title';
+      titleDiv.textContent = s.name + ' Procrastinator ';
+      var badgeSpan = document.createElement('span');
+      badgeSpan.className = 'badge badge-' + info.cls;
+      badgeSpan.textContent = info.cls === 'major' ? 'Major' : 'Minor';
+      titleDiv.appendChild(badgeSpan);
+
+      var scoreDiv = document.createElement('div');
+      scoreDiv.className = 'style-card-score';
+      scoreDiv.textContent = 'Score: ' + s.score + '/20 \u00B7 Rank #' + s.rank;
+
+      var descDiv = document.createElement('div');
+      descDiv.className = 'style-card-desc';
+      descDiv.textContent = s.desc;
+
+      card.appendChild(titleDiv);
+      card.appendChild(scoreDiv);
+      card.appendChild(descDiv);
+      cards.appendChild(card);
+    });
+
+    if (!hasStyles) {
+      var none = document.createElement('p');
+      none.style.cssText = 'color:#4a7a9b;font-style:italic;font-size:14px;padding:20px;';
+      none.textContent = 'You scored below 5 on all styles \u2014 procrastination may not be a significant pattern for you right now.';
+      cards.appendChild(none);
+    }
+
+    document.getElementById('results-section').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ── Back to Review from Results ── */
+  function backToReview() {
+    document.getElementById('results-section').style.display = 'none';
+    document.getElementById('quiz-container').style.display = 'block';
+    document.getElementById('nav-row').style.display = 'flex';
+    currentSection = quizzes.length - 1;
+    document.querySelectorAll('.quiz-section').forEach(function(s, i) {
+      s.classList.toggle('active', i === currentSection);
+    });
+    updateNav();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ── Copy Results to Clipboard ── */
+  function copyResults() {
+    if (!cachedScores || !cachedSorted) computeScores();
+
+    var lines = ['PROCRASTINATION STYLE RESULTS', '============================', ''];
+    cachedScores.forEach(function(s) {
+      var ranked = cachedSorted.find(function(r) { return r.name === s.name; });
+      var info = classify(s.score);
+      lines.push(s.name + ': ' + s.score + '/20 — ' + info.label + ' (Rank #' + ranked.rank + ')');
+    });
+    lines.push('');
+    lines.push('IDENTIFIED STYLES');
+    lines.push('-----------------');
+    cachedSorted.forEach(function(s) {
+      if (s.score < 5) return;
+      var info = classify(s.score);
+      lines.push('');
+      lines.push(s.name + ' Procrastinator [' + (info.cls === 'major' ? 'MAJOR' : 'MINOR') + '] — ' + s.score + '/20');
+      lines.push(s.desc);
+    });
+
+    var text = lines.join('\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        showToast();
+      }).catch(function() {
+        fallbackCopy(text);
+      });
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast(); }
+    catch (e) { alert('Copy failed — please select and copy manually.'); }
+    document.body.removeChild(ta);
+  }
+
+  function showToast() {
+    var toast = document.getElementById('copyToast');
+    toast.classList.add('visible');
+    setTimeout(function() { toast.classList.remove('visible'); }, 2400);
+  }
+
+  /* ── Reset ── */
+  function resetQuiz() {
+    answers = quizzes.map(function() { return Array(10).fill(null); });
+    cachedScores = null;
+    cachedSorted = null;
+    currentSection = 0;
+    document.getElementById('quiz-container').style.display = 'block';
+    document.getElementById('nav-row').style.display = 'flex';
+    document.getElementById('results-section').style.display = 'none';
+    document.getElementById('summaryBody').innerHTML = '';
+    document.getElementById('styleCards').innerHTML = '';
+    document.querySelectorAll('.quiz-section').forEach(function(s, i) {
+      s.classList.toggle('active', i === 0);
+    });
+    document.querySelectorAll('.option-btn').forEach(function(b) {
+      b.classList.remove('selected');
+      b.setAttribute('aria-checked', 'false');
+    });
+    document.getElementById('incomplete-warning').style.display = 'none';
+    updateNav();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ── Init ── */
+  buildQuizzes();
+
+  document.getElementById('prevBtn').addEventListener('click', function() { goTo(-1); });
+  document.getElementById('nextBtn').addEventListener('click', function() { goTo(1); });
+  document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+  document.getElementById('backToReviewBtn').addEventListener('click', backToReview);
+  document.getElementById('copyResultsBtn').addEventListener('click', copyResults);
+
+  /* Delegated click handler for option buttons */
+  document.getElementById('quiz-container').addEventListener('click', function(e) {
+    var btn = e.target.closest('.option-btn');
+    if (!btn) return;
+    selectAnswer(parseInt(btn.dataset.qi, 10), parseInt(btn.dataset.i, 10), btn.dataset.val, btn);
+  });
+
+  /* Keyboard support: arrow keys within radiogroups */
+  document.getElementById('quiz-container').addEventListener('keydown', function(e) {
+    var btn = e.target.closest('.option-btn');
+    if (!btn) return;
+    var group = btn.parentElement;
+    var buttons = Array.prototype.slice.call(group.querySelectorAll('.option-btn'));
+    var idx = buttons.indexOf(btn);
+    var next = null;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      next = buttons[(idx + 1) % buttons.length];
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      next = buttons[(idx - 1 + buttons.length) % buttons.length];
+    }
+    if (next) {
+      e.preventDefault();
+      next.focus();
+      selectAnswer(parseInt(next.dataset.qi, 10), parseInt(next.dataset.i, 10), next.dataset.val, next);
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
